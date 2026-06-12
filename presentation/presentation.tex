@@ -6,6 +6,7 @@
 \usepackage{mathtools}
 \usepackage{xcolor}
 \usepackage{fvextra}
+\usepackage{qrcode}
 
 \IfFontExistsTF{Avenir Next}
   {\setsansfont{Avenir Next}}
@@ -266,6 +267,17 @@
 \end{Verbatim}
 \end{frame}
 
-\partslide{Thank you for listening!}
+\begin{frame}[plain]
+  \centering
+  \vfill
+  {\usebeamerfont{section title}\color{accent}Thank you for listening!}
+  
+  \vspace{2em}
+  \qrcode[height=1.5in]{https://github.com/leanprover-community/mathlib4/pull/40561}
+
+  \vspace{1em}
+  {\small Scan the QR code to checkout our PR in \texttt{mathlib4} Github repository!}
+  \vfill
+\end{frame}
 
 \end{document}
