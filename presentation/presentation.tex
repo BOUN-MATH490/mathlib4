@@ -7,8 +7,10 @@
 \usepackage{xcolor}
 \usepackage{fvextra}
 
-\setsansfont{Avenir Next}
-\setmonofont{Menlo}
+\IfFontExistsTF{Avenir Next}
+  {\setsansfont{Avenir Next}}
+  {\setsansfont{TeX Gyre Heros}}
+\setmonofont{DejaVu Sans Mono}
 
 \definecolor{accent}{HTML}{315C8C}
 \definecolor{textgray}{HTML}{222222}
@@ -48,9 +50,10 @@
 \newcommand{\lop}[1]{\textcolor{leanOperator}{#1}}
 \newcommand{\lhole}[1]{\textcolor{leanHole}{#1}}
 
-\title{Formalizing Quantifier Elimination}
-\subtitle{A Lean formalization in model theory}
-\author{}
+\title{Model-Theoretic Quantifier Elimination}
+\subtitle{A Lean formalization over \texttt{mathlib4}}
+\author{Yağız Kaan Aydoğdu, Yusuf Demir, Salih Erdem Koçak}
+\institute{Advisors: Ayhan Günaydın, Metin Ersin Arıcan}
 \date{}
 
 \begin{document}
@@ -59,75 +62,142 @@
   \titlepage
 \end{frame}
 
+\begin{frame}{Contents}
+  \begin{enumerate}
+    \item Model Theory
+    \item Type Theory
+    \item Formalization in Lean
+  \end{enumerate}
+\end{frame}
+
 \partslide{Model Theory}
+
+\begin{frame}{What is Model Theory?}
+  \begin{itemize}
+    \item Model theory is a branch of mathematical logic where we study mathematical structures by considering the first-order sentences true in those structures and the sets definable by first-order formulas.
+    \item Given concrete mathematical structures, we can obtain new information about the structure using model-theoretic techniques.
+  \end{itemize}
+\end{frame}
 
 \begin{frame}{Language}
   \begin{itemize}
-    \item A first-order language specifies relation and function symbols.
-    \item Each symbol has a fixed arity.
-    \item DLO language: one binary relation symbol, interpreted as \(\leq\).
+    \item In mathematical logic, we use first-order languages to describe mathematical structures.
+    \item A $\mathit{language}$ $\mathcal{L}$ consists of:
+      \begin{itemize}
+        \item a set of function symbols $\mathcal{F}$
+        \item a set of relation symbols $\mathcal{R}$
+        \item a set of constant symbols $\mathcal{C}$
+      \end{itemize}
+    \item Examples:
+      \begin{itemize}
+        \item The language of rings $\mathcal{L}_r = \{+, -, \cdot, 0, 1\}$
+        \item The language of orders $\mathcal{L}_o = \{<\}$
+      \end{itemize}
   \end{itemize}
 \end{frame}
 
 \begin{frame}{Structure}
   \begin{itemize}
     \item A structure interprets the symbols of a language on a domain.
-    \item For the order language, a structure is a type \(M\) with a binary relation.
-    \item Example: \((\mathbb{Q}, \leq)\).
+    \item Formally, an \text{$\mathcal{L}$-structure} $\mathcal{M}$ consists of:
+      \begin{itemize}
+        \item a non-empty set \(M\) (the domain/universe),
+        \item for each function symbol \(f \in \mathcal{F}\), a function \(f^{\mathcal{M}} : \mathcal{M}^n \to \mathcal{M}\),
+        \item for each relation symbol \(R \in \mathcal{R}\), a relation \(R^{\mathcal{M}} \subseteq \mathcal{M}^n\),
+        \item for each constant symbol \(c \in \mathcal{C}\), an element \(c^{\mathcal{M}} \in \mathcal{M}\).
+      \end{itemize}
+    \item Examples: \((\mathbb{N}, 0, 1, +, \cdot)\), {\((\mathbb{Q}, \leq)\)}.
   \end{itemize}
 \end{frame}
 
 \begin{frame}{Terms}
   \begin{itemize}
-    \item Terms are built from variables and function symbols.
-    \item In the pure order language, there are no function symbols.
-    \item DLO terms are just variables or parameters: \(x,y,a,b\).
+    \item An \textit{$\mathcal{L}$-term} is:
+    \begin{itemize}
+      \item a constant symbol \(c\),
+      \item a variable \(v_i\)
+      \item or a function symbol \(f\) applied to terms \(t_1, \ldots, t_n\).
+    \end{itemize}
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Formula}
+\begin{frame}{Formula and Sentence}
   \begin{itemize}
-    \item Formulas are built from atomic formulas using logical connectives and quantifiers.
-    \item Atomic DLO examples: \(x \leq y\), \(x = y\).
-    \item Formula example: \(\exists z\,(x < z \wedge z < y)\).
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Sentence}
-  \begin{itemize}
-    \item A sentence is a formula with no free variables.
-    \item Example: \(\forall x\,\forall y\,(x \leq y \vee y \leq x)\).
-    \item Density: \(\forall x\,\forall y\,(x < y \to \exists z\,(x < z \wedge z < y))\).
+    \item An \textit{atomic $\mathcal{L}$-formula} is a relation symbol applied to terms, or an equality between terms.
+    \item \textit{$\mathcal{L}$-formulas} are built from atomic formulas using logical connectives and quantifiers.
+    \item An \textit{$\mathcal{L}$-sentence} is a formula with no free variables.
+    \item Example: \(\exists z\,(x < z \wedge z < y)\) is formula but not a sentence, as it has free variables \(x\) and \(y\).
   \end{itemize}
 \end{frame}
 
 \begin{frame}{Satisfaction}
   \begin{itemize}
-    \item \(M \models \varphi[a]\): \(\varphi\) holds in \(M\) under assignment \(a\).
-    \item For sentences, no assignment is needed.
-    \item Example: \((\mathbb{Q},\leq) \models \exists z\,(0<z \wedge z<1)\).
+    \item We say that an $\mathcal{M}$ \textit{satisfies} a formula $\varphi$, written $\mathcal{M} \models \varphi$, if $\varphi$ holds in $\mathcal{M}$.
+    \item Formally, the satisfaction relation is defined inductively on the structure of formulas.
+    \item Example: \((\mathbb{Q}, <) \models \forall x \forall y\, (x<y \implies \exists z\, x < z \wedge z < y)\).
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Theory}
+\begin{frame}{Theory and Model}
   \begin{itemize}
-    \item A theory is a set of sentences.
-    \item The theory DLO contains the axioms for:
-      \begin{itemize}
-        \item linear orders,
-        \item density,
-        \item no endpoints.
-      \end{itemize}
+    \item An \textit{$\mathcal{L}$-theory} is a set of $\mathcal{L}$-sentences.
+    \item We say that a structure $\mathcal{M}$ is a \textit{model} of a theory $T$, written $\mathcal{M} \models T$, if $\mathcal{M}$ satisfies every sentence in $T$.
+    \item A theory is \textit{satisfiable} if it has a model.
+    \item Moreover, we say that a theory $T$ satisfies a sentence $\varphi$, written $T \models \varphi$, if every model of $T$ satisfies $\varphi$.
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Model}
+\begin{frame}{Dense Linear Orders without Endpoints}
+  \small
   \begin{itemize}
-    \item \(M \models T\) means \(M\) satisfies every sentence in \(T\).
-    \item \((\mathbb{Q},\leq)\) is a model of DLO.
-    \item \((\mathbb{Z},\leq)\) is not: it is not dense.
+    \item Let \(\mathcal{L}_o = \{<\}\) be the language of orders.
+    \item Let DLO be the $\mathcal{L}_o$-theory consisting of the following sentences:
+      \[
+      \begin{array}{@{}l@{\qquad}l@{}}
+        \forall x\, \neg (x < x) &
+          \text{(Irreflexivity)} \\
+        \forall x\,\forall y\,\forall z\, (x < y \wedge y < z \to x < z) &
+          \text{(Transitivity)} \\
+        \forall x\,\forall y\, (x < y \vee x = y \vee y < x) &
+          \text{(Linearity)} \\
+        \forall x\,\forall y\, (x < y \to \exists z\, (x < z \wedge z < y)) &
+          \text{(Density)} \\
+        \forall x\,\exists y\, \exists z (y < x \wedge x < z) &
+          \text{(No endpoints)}
+      \end{array}
+      \]
   \end{itemize}
 \end{frame}
+
+\begin{frame}{Quantifier Elimination}
+  \begin{itemize}
+    \item A theory $T$ has \textit{quantifier elimination} if for every formula $\varphi$, there is a quantifier-free formula $\psi$ such that
+
+    \[
+    T \models \varphi \leftrightarrow \psi
+    \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Does DLO have Quantifier Elimination?}
+  \small
+  \begin{itemize}
+    \item DLO has quantifier elimination.
+    \item Every formula in the language \(\{<\}\) is equivalent over DLO to a quantifier-free formula.
+    \item Examples:
+        \[
+      \begin{array}{@{}rcl@{}}
+        \exists z\, (x < z \wedge z < y)
+          &\Longleftrightarrow& x < y \\[0.6em]
+        \exists z\, (x < z \wedge w < z \wedge z < y)
+          &\Longleftrightarrow& x < y \wedge w < y \\[0.6em]
+        \exists z\, \bigl(x < z \wedge z < y \wedge \neg(z < w)\bigr)
+          &\Longleftrightarrow& x < y \wedge (w < y \vee w = y)
+      \end{array}
+      \]
+  \end{itemize}
+\end{frame}
+
 
 \partslide{Type Theory}
 
@@ -170,7 +240,7 @@
   \]
 \end{frame}
 
-\partslide{Lean}
+\partslide{Formalization in Lean}
 
 \begin{frame}[fragile]
 \begin{Verbatim}[fontsize=\scriptsize,commandchars=\\\|\@]
@@ -194,5 +264,7 @@
   \lhole|...@
 \end{Verbatim}
 \end{frame}
+
+\partslide{Thank you for listening!}
 
 \end{document}
