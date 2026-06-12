@@ -1,0 +1,7 @@
+\begin{Verbatim}[fontsize=\scriptsize,commandchars=\\\|\@]
+\lcom|/-- The theory of dense linear orders without endpoints@
+\lcom|has quantifier elimination. -/@
+\lkw|theorem@ \ldecl|dlo_hasQuantifierElimination@ :
+    Language.order.dlo.HasQuantifierElimination := \lkw|by@
+  \lhole|...@
+\end{Verbatim}

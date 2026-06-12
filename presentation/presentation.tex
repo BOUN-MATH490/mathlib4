@@ -1,0 +1,198 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+
+\usefonttheme{professionalfonts}
+\usepackage{fontspec}
+\usepackage{amsmath,amssymb}
+\usepackage{mathtools}
+\usepackage{xcolor}
+\usepackage{fvextra}
+
+\setsansfont{Avenir Next}
+\setmonofont{Menlo}
+
+\definecolor{accent}{HTML}{315C8C}
+\definecolor{textgray}{HTML}{222222}
+\definecolor{leanComment}{HTML}{6A9955}
+\definecolor{leanKeyword}{HTML}{9B3FAE}
+\definecolor{leanDecl}{HTML}{0B6E99}
+\definecolor{leanType}{HTML}{267F99}
+\definecolor{leanOperator}{HTML}{B35C00}
+\definecolor{leanHole}{HTML}{7A7A7A}
+
+\setbeamercolor{normal text}{fg=textgray,bg=white}
+\setbeamercolor{frametitle}{fg=accent,bg=white}
+\setbeamercolor{title}{fg=accent}
+\setbeamercolor{structure}{fg=accent}
+\setbeamerfont{title}{size=\Large,series=\bfseries}
+\setbeamerfont{frametitle}{size=\large,series=\bfseries}
+\setbeamerfont{section title}{size=\Large,series=\bfseries}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}{%
+  \hfill\usebeamerfont{page number in head/foot}\insertframenumber\hspace{1.5em}\vspace{1em}}
+\setbeamertemplate{itemize item}{\raisebox{0.2ex}{\small\(\bullet\)}}
+\setbeamertemplate{itemize subitem}{\raisebox{0.2ex}{\scriptsize\(\bullet\)}}
+
+\newcommand{\partslide}[1]{%
+  \begin{frame}[plain]
+    \centering
+    \vfill
+    {\usebeamerfont{section title}\color{accent}#1}
+    \vfill
+  \end{frame}
+}
+\newcommand{\interp}[1]{[\![#1]\!]}
+\newcommand{\lcom}[1]{\textcolor{leanComment}{#1}}
+\newcommand{\lkw}[1]{\textcolor{leanKeyword}{\textbf{#1}}}
+\newcommand{\ldecl}[1]{\textcolor{leanDecl}{#1}}
+\newcommand{\ltype}[1]{\textcolor{leanType}{#1}}
+\newcommand{\lop}[1]{\textcolor{leanOperator}{#1}}
+\newcommand{\lhole}[1]{\textcolor{leanHole}{#1}}
+
+\title{Formalizing Quantifier Elimination}
+\subtitle{A Lean formalization in model theory}
+\author{}
+\date{}
+
+\begin{document}
+
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+
+\partslide{Model Theory}
+
+\begin{frame}{Language}
+  \begin{itemize}
+    \item A first-order language specifies relation and function symbols.
+    \item Each symbol has a fixed arity.
+    \item DLO language: one binary relation symbol, interpreted as \(\leq\).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Structure}
+  \begin{itemize}
+    \item A structure interprets the symbols of a language on a domain.
+    \item For the order language, a structure is a type \(M\) with a binary relation.
+    \item Example: \((\mathbb{Q}, \leq)\).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Terms}
+  \begin{itemize}
+    \item Terms are built from variables and function symbols.
+    \item In the pure order language, there are no function symbols.
+    \item DLO terms are just variables or parameters: \(x,y,a,b\).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Formula}
+  \begin{itemize}
+    \item Formulas are built from atomic formulas using logical connectives and quantifiers.
+    \item Atomic DLO examples: \(x \leq y\), \(x = y\).
+    \item Formula example: \(\exists z\,(x < z \wedge z < y)\).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Sentence}
+  \begin{itemize}
+    \item A sentence is a formula with no free variables.
+    \item Example: \(\forall x\,\forall y\,(x \leq y \vee y \leq x)\).
+    \item Density: \(\forall x\,\forall y\,(x < y \to \exists z\,(x < z \wedge z < y))\).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Satisfaction}
+  \begin{itemize}
+    \item \(M \models \varphi[a]\): \(\varphi\) holds in \(M\) under assignment \(a\).
+    \item For sentences, no assignment is needed.
+    \item Example: \((\mathbb{Q},\leq) \models \exists z\,(0<z \wedge z<1)\).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Theory}
+  \begin{itemize}
+    \item A theory is a set of sentences.
+    \item The theory DLO contains the axioms for:
+      \begin{itemize}
+        \item linear orders,
+        \item density,
+        \item no endpoints.
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Model}
+  \begin{itemize}
+    \item \(M \models T\) means \(M\) satisfies every sentence in \(T\).
+    \item \((\mathbb{Q},\leq)\) is a model of DLO.
+    \item \((\mathbb{Z},\leq)\) is not: it is not dense.
+  \end{itemize}
+\end{frame}
+
+\partslide{Type Theory}
+
+\begin{frame}{Judgements}
+  \begin{itemize}
+    \item \(a : A\) is a judgement: \(a\) has type \(A\).
+    \item Every expression has a type.
+    \item Definitional equality is written \(a \equiv b\).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Propositions as Types}
+  \begin{itemize}
+    \item A proposition is viewed as a type of evidence.
+    \item A proof of \(P\) is a term \(p : P\).
+    \item To prove a theorem is to construct an object of the corresponding type.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Constructive Reasoning}
+  \begin{itemize}
+    \item A proof of \(\exists x, P(x)\) gives a witness and evidence.
+    \item A proof of \(P \vee Q\) chooses one side and proves it.
+    \item The law of excluded middle, \(P \vee \neg P\), is not built in constructively.
+    \item Lean allows classical reasoning when explicitly invoked.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Curry--Howard Isomorphism}
+  \[
+  \begin{aligned}
+  \interp{P \Rightarrow Q} &\equiv \interp{P} \to \interp{Q} \\
+  \interp{P \wedge Q} &\equiv \interp{P} \times \interp{Q} \\
+  \interp{\mathrm{True}} &\equiv 1 \\
+  \interp{P \vee Q} &\equiv \interp{P} + \interp{Q} \\
+  \interp{\mathrm{False}} &\equiv 0 \\
+  \interp{\forall x : A.\,P} &\equiv \Pi x : A.\,\interp{P} \\
+  \interp{\exists x : A.\,P} &\equiv \Sigma x : A.\,\interp{P}
+  \end{aligned}
+  \]
+\end{frame}
+
+\partslide{Lean}
+
+\begin{frame}[fragile]
+\begin{Verbatim}[fontsize=\scriptsize,commandchars=\\\|\@]
+\lcom|/-- A formula is equivalent to a quantifier-free formula over a theory. -/@
+\lkw|def@ \ldecl|IsQFEquivalent@ (T : L.Theory) {α : \ltype|Type*@} (φ : L.Formula α) : \ltype|Prop@ :=
+  \lop|∃@ ψ : L.Formula α, ψ.IsQF \lop|∧@ φ \lop|⇔[T]@ ψ
+
+\lcom|/-- A theory has quantifier elimination if every formula is equivalent,@
+\lcom|over the theory, to a quantifier-free formula. -/@
+\lkw|def@ \ldecl|HasQuantifierElimination@ (T : L.Theory) : \ltype|Prop@ :=
+  \lop|∀@ {α : \ltype|Type@} (φ : L.Formula α), T.IsQFEquivalent φ
+\end{Verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{Verbatim}[fontsize=\scriptsize,commandchars=\\\|\@]
+\lcom|/-- The theory of dense linear orders without endpoints@
+\lcom|has quantifier elimination. -/@
+\lkw|theorem@ \ldecl|dlo_hasQuantifierElimination@ :
+    Language.order.dlo.HasQuantifierElimination := \lkw|by@
+  \lhole|...@
+\end{Verbatim}
+\end{frame}
+
+\end{document}
