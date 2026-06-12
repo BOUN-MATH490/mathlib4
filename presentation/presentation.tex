@@ -203,32 +203,101 @@
 
 \partslide{Type Theory}
 
+\begin{frame}{Type Theory}
+  \begin{itemize}
+    \item We work in the sense of Martin-L\"of Type Theory: a constructive foundation of mathematics.
+    \item The basic syntactic form is a \textit{judgement}, not a proposition.
+    \item Every object and expression has a (unique) type, statically determined.
+    \item This is the foundation used by proof assistants such as Lean, Agda, and Coq.
+  \end{itemize}
+
+  \vspace{0.4em}
+  \[
+    \text{proofs as programs} \qquad
+    \text{propositions as types}
+  \]
+\end{frame}
+
+\begin{frame}{Type Theory vs Set Theory}
+  \begin{columns}[T,totalwidth=\textwidth]
+    \begin{column}{0.48\textwidth}
+      \textbf{Set theory}
+      \begin{itemize}
+        \item \(3 \in \mathbb{N}\) is a \textit{proposition}.
+        \item Membership is the basic relation.
+        \item Functions are derived: subsets of \(A \times B\) with certain properties.
+        \item One may ask encoding-dependent questions, e.g.\ \(\mathbb{N} \cap \mathrm{Bool} = \emptyset\)?
+      \end{itemize}
+    \end{column}
+
+    \begin{column}{0.48\textwidth}
+      \textbf{Type theory}
+      \begin{itemize}
+        \item \(3 : \mathbb{N}\) is a \textit{judgement} (static information).
+        \item Typing is the basic judgement; \(a : A\) is not a proposition.
+        \item Functions are primitive: given \(A, B : \mathrm{Type}\), we form \(A \to B : \mathrm{Type}\).
+        \item Type theory is extensional in the sense that we cannot talk about implementation details.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
 \begin{frame}{Judgements}
   \begin{itemize}
-    \item \(a : A\) is a judgement: \(a\) has type \(A\).
-    \item Every expression has a type.
-    \item Definitional equality is written \(a \equiv b\).
+    \item A \textit{judgement} is static information that the type system can check.
+    \item The central judgement is \(a : A\): ``\(a\) is an element of type \(A\)''.
+    \item A \textit{context} \(\Gamma\) records the assumptions currently in scope.
+  \end{itemize}
+
+  \vspace{0.4em}
+  \[
+    \Gamma = x : A,\; f : A \to B \;\vdash\; f\,x : B
+  \]
+\end{frame}
+
+\begin{frame}{Functions}
+  \begin{itemize}
+    \item Given \(A, B : \mathrm{Type}\), the function type \(A \to B : \mathrm{Type}\) is primitive.
+    \item A function is defined by its action on inputs, e.g.\ \(f : \mathbb{N} \to \mathbb{N}\) with \(f\,x \equiv x + 3\).
+    \item Anonymous functions use \(\lambda\)-abstraction: \(\lambda x.\, x + 3 : \mathbb{N} \to \mathbb{N}\).
+  \end{itemize}
+
+  \vspace{0.4em}
+  \[
+    (\lambda x.\, x + 3)\,2 \equiv 2 + 3
+    \qquad\text{(\(\beta\)-reduction)}
+  \]
+
+  \vspace{0.4em}
+  \begin{itemize}
+    \item Every function has exactly one argument; multiple arguments use currying:
+      \(g : \mathbb{N} \to (\mathbb{N} \to \mathbb{N})\), so \(g\,3\,2 : \mathbb{N}\).
+    \item Application associates to the left; \(\to\) associates to the right.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Products and Sums}
+  \begin{itemize}
+    \item Given \(A, B : \mathrm{Type}\), we form the product \(A \times B\) and the sum \(A + B\).
+    \item \((a, b) : A \times B\) if \(a : A\) and \(b : B\).
+    \item \(\mathrm{left}\,a : A + B\) if \(a : A\); \(\mathrm{right}\,b : A + B\) if \(b : B\).
+    \item The unit type \(1\) has a single element \(\texttt{()}\); the empty type \(0\) has no elements.
   \end{itemize}
 \end{frame}
 
 \begin{frame}{Propositions as Types}
   \begin{itemize}
-    \item A proposition is viewed as a type of evidence.
-    \item A proof of \(P\) is a term \(p : P\).
-    \item To prove a theorem is to construct an object of the corresponding type.
+    \item A proposition \(P\) is represented as a type \(P : \mathrm{Type}\).
+    \item A proof of \(P\) is a term \(p : P\), evidence for the proposition.
   \end{itemize}
+
+  \vspace{0.4em}
+  \[
+    \text{to prove } P \text{ is to construct } p : P
+  \]
 \end{frame}
 
-\begin{frame}{Constructive Reasoning}
-  \begin{itemize}
-    \item A proof of \(\exists x, P(x)\) gives a witness and evidence.
-    \item A proof of \(P \vee Q\) chooses one side and proves it.
-    \item The law of excluded middle, \(P \vee \neg P\), is not built in constructively.
-    \item Lean allows classical reasoning when explicitly invoked.
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Curry--Howard Isomorphism}
+\begin{frame}{Curry--Howard Translation}
   \[
   \begin{aligned}
   \interp{P \Rightarrow Q} &\equiv \interp{P} \to \interp{Q} \\
@@ -236,10 +305,189 @@
   \interp{\mathrm{True}} &\equiv 1 \\
   \interp{P \vee Q} &\equiv \interp{P} + \interp{Q} \\
   \interp{\mathrm{False}} &\equiv 0 \\
-  \interp{\forall x : A.\,P} &\equiv \Pi x : A.\,\interp{P} \\
-  \interp{\exists x : A.\,P} &\equiv \Sigma x : A.\,\interp{P}
+  \interp{\forall x : A.\,P(x)} &\equiv \Pi x : A.\,\interp{P(x)} \\
+  \interp{\exists x : A.\,P(x)} &\equiv \Sigma x : A.\,\interp{P(x)}
   \end{aligned}
   \]
+\end{frame}
+
+\begin{frame}{Dependent Types}
+  \begin{itemize}
+    \item A \textit{dependent type} is a family \(B : A \to \mathrm{Type}\) indexed by \(A\).
+    \item \(\Pi\)-types generalise function types: the codomain may depend on the domain.
+    \item \(\Sigma\)-types generalise products: the second component may depend on the first.
+  \end{itemize}
+
+  \vspace{0.4em}
+  \[
+    \Pi x : A.\, B(x)
+    \qquad
+    \Sigma x : A.\, B(x)
+  \]
+
+  \vspace{0.4em}
+  \begin{itemize}
+    \item Example: \(\mathrm{zeroes} : \Pi n : \mathbb{N}.\, A^n\) --- assigns to each length \(n\) a tuple of \(n\) elements of type \(A\).
+    \item Example: \(\mathrm{List}\,A \equiv \Sigma n : \mathbb{N}.\, A^n\).
+    \item Predicates are dependent types: e.g.\ \(\mathrm{Prime} : \mathbb{N} \to \mathrm{Type}\).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Typed Predicate Logic}
+  \begin{itemize}
+    \item We use a \textit{typed} predicate logic: quantifiers range over a type \(A\).
+    \item Other connectives are defined: \(\neg P \equiv P \to 0\), \quad \(P \Leftrightarrow Q \equiv (P \to Q) \times (Q \to P)\).
+    \item Not all classical tautologies hold, e.g.\ \(\neg(P \wedge Q) \Leftrightarrow \neg P \vee \neg Q\).
+    \item The law of excluded middle \(P \vee \neg P\) is not provable in general.
+  \end{itemize}
+
+  \vspace{0.4em}
+  \[
+    \exists x : A.\, P(x)
+    \;\leadsto\;
+    \Sigma x : A.\, P(x)
+    \;=\;
+    \text{a pair } (a, p) \text{ with } a : A,\; p : P(a).
+  \]
+
+  \vspace{0.3em}
+  \begin{itemize}
+    \item A proof of \(\exists x : A.\, P(x)\) provides an explicit witness \(a : A\) and evidence \(p : P(a)\)!
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Example: Distributivity of Conjunction over Disjunction}
+  \small
+  \textbf{Goal:}\;
+  \(P \wedge (Q \vee R) \Leftrightarrow (P \wedge Q) \vee (P \wedge R)\).
+
+  \vspace{0.3em}
+  For \(P, Q, R : \mathrm{Type}\), define maps
+  \[
+    \begin{aligned}
+      f &: P \times (Q + R) \to (P \times Q) + (P \times R), \\
+      g &: (P \times Q) + (P \times R) \to P \times (Q + R)
+    \end{aligned}
+  \]
+  by pattern matching on constructors:
+
+  \vspace{0.2em}
+  \begin{columns}[T,totalwidth=\textwidth]
+    \begin{column}{0.48\textwidth}
+      \[
+        \begin{aligned}
+          f\,(p, \mathrm{left}\,q) &\equiv \mathrm{left}\,(p, q), \\
+          f\,(p, \mathrm{right}\,r) &\equiv \mathrm{right}\,(p, r)
+        \end{aligned}
+      \]
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \[
+        \begin{aligned}
+          g\,(\mathrm{left}\,(p, q)) &\equiv (p, \mathrm{left}\,q), \\
+          g\,(\mathrm{right}\,(p, r)) &\equiv (p, \mathrm{right}\,r)
+        \end{aligned}
+      \]
+    \end{column}
+  \end{columns}
+
+  \vspace{0.8em}
+  The pair \((f, g)\) is evidence for the logical equivalence!
+\end{frame}
+
+\begin{frame}{The Equality Type}
+  \begin{itemize}
+    \item Given \(a, b : A\), the equality type \(a =_A b : \mathrm{Type}\) is generated by one constructor:
+  \end{itemize}
+
+  \vspace{0.4em}
+  \[
+    \mathrm{refl} : \Pi x : A.\, x =_A x
+  \]
+
+  \vspace{0.4em}
+  \begin{itemize}
+    \item A proof \(p : a =_A b\) is evidence that \(a\) and \(b\) are equal.
+    \item From \(\mathrm{refl}\) we derive symmetry, transitivity, and congruence:
+  \end{itemize}
+
+  \vspace{0.2em}
+  \small
+  \[
+    \mathrm{sym} : \Pi x, y : A.\, x =_A y \to y =_A x
+  \]
+  \[
+    \mathrm{trans} : \Pi x, y, z : A.\, x =_A y \to y =_A z \to x =_A z
+  \]
+\end{frame}
+
+\begin{frame}{Dimensions of Types}
+  \small
+  \begin{itemize}
+    \item The type \(A\) with its equality types forms a \textit{groupoid}: \(\mathrm{refl}\) is identity, \(\mathrm{sym}\) gives inverses, \(\mathrm{trans}\) composes paths.
+    \item Types are classified by \textit{dimension} (truncation level): how much higher equality structure they carry.
+  \end{itemize}
+
+  \vspace{0.4em}
+  \centering
+  \begin{tabular}{@{}r@{\quad}l@{}}
+    \textbf{Dimension} & \textbf{Name} \\[0.2em]
+    \hline
+    $-2$ & contractible types \\
+    $-1$ & propositions \\
+    $0$  & sets \\
+    $1$  & groupoids \\
+  \end{tabular}
+
+  \vspace{0.4em}
+  \begin{itemize}
+    \item A \textit{proposition} has at most one element; a \textit{set} has propositional equalities; a \textit{groupoid} has set-like equalities between paths.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Extensionality and Univalence}
+  \small
+  \begin{itemize}
+    \item Example: \(1 + 2\) and \(2 + 1\) are indistinguishable, yet not definitionally equal.
+  \end{itemize}
+
+  \vspace{0.3em}
+  A map \(f : A \to B\) is an \textit{equivalence} if it has a two-sided inverse up to equality.
+  Write
+  \[
+    A \simeq B :\;\equiv\; \Sigma f : A \to B.\,\mathrm{isEquiv}\,f.
+  \]
+
+  \vspace{0.2em}
+  Path induction gives \(\mathrm{eq2equiv} : A =_{\mathrm{Type}} B \to A \simeq B\).
+
+  \vspace{0.3em}
+  \textbf{Univalence axiom:}\; \(\mathrm{eq2equiv}\) is itself an equivalence:
+  \[
+    \mathrm{isEquiv}(\mathrm{eq2equiv})
+    \qquad\Longleftrightarrow\qquad
+    (A \simeq B) \simeq (A =_{\mathrm{Type}} B)
+  \]
+
+  \vspace{0.2em}
+  \textbf{Consequence:}\; \(A \simeq B \to A =_{\mathrm{Type}} B\) --- equivalent types may be treated as equal.
+\end{frame}
+
+\begin{frame}{Towards Homotopy Type Theory}
+  \begin{columns}[T,totalwidth=\textwidth]
+    \begin{column}{0.48\textwidth}
+      \begin{itemize}
+        \item Types carry higher-dimensional structure: paths, paths between paths, \ldots
+        \item This \(\omega\)-groupoid view connects logic, computation, and topology.
+        \item Lean's core is based on intensional type theory; univalence and HoTT are active research areas.
+      \end{itemize}
+    \end{column}
+
+    \begin{column}{0.48\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{torus_hott.png}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \partslide{Formalization in Lean}
@@ -271,12 +519,12 @@
   \centering
   \vfill
   {\usebeamerfont{section title}\color{accent}Thank you for listening!}
-  
+
   \vspace{2em}
   \qrcode[height=1.5in]{https://github.com/leanprover-community/mathlib4/pull/40561}
 
   \vspace{1em}
-  {\small Scan the QR code to checkout our PR in \texttt{mathlib4} Github repository!}
+  {\small Scan the QR code to checkout our PR in \texttt{mathlib4} GitHub repository!}
   \vfill
 \end{frame}
 
