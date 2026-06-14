@@ -158,13 +158,15 @@ def othersInMathlib : Array Char := #[
 
   '┌', '┐', '│', '├', '└', '┬', '┘', '▼', '◄', '⋅', 'ś', '－', '＼', '◥', '／', '◢',
 
+  '╭', '╮', '╰', '╯',
+
   '◿', '◹', 'ő', '⥥', '⤞', '⥢', '╱', '⟋', 'Ž', 'ą', 'Š', 'ầ', '：', '꙳', '⎛',
 
   '⎞', '⎜', '⎟', '⎝', '⎠', 'ă', 'ĝ', 'ᵧ', '▶', '‑', '‾', 'ř', '⏎', '‐', '𐞥',
 
   'ꟴ', 'ᵟ', 'ᴀ', 'ʙ', 'ᴄ', 'ᴅ', 'ᴇ', 'ꜰ', 'ɢ', 'ʜ', 'ɪ', 'ᴊ', 'ᴋ', 'ʟ', 'ᴍ', 'ɴ',
 
-  'ᴏ', 'ᴘ', 'ꞯ', 'ʀ', 'ꜱ', 'ᴛ', 'ᴜ', 'ᴠ', 'ᴡ', 'ʏ', 'ᴢ', 'ᵦ', 'ᵨ', 'ᵩ', 'ᵪ', 'Ś', 'ę'
+  'ᴏ', 'ᴘ', 'ꞯ', 'ʀ', 'ꜱ', 'ᴛ', 'ᴜ', 'ᴠ', 'ᴡ', 'ʏ', 'ᴢ', 'ᵦ', 'ᵨ', 'ᵩ', 'ᵪ', 'Ś', 'ę', 'ğ'
 ]
 
 /-- Unicode symbols in mathlib that should always be followed by the emoji variant selector. -/
@@ -186,10 +188,19 @@ public def emojis : Array Char := #[
 /-- Unicode symbols in mathlib that should always be followed by the text variant selector. -/
 public def nonEmojis : Array Char := #[]
 
+/-- Unicode symbols in mathlib that have no restrictions on whether they are followed by a selector
+or which selector they are followed by. -/
+public def unrestricted : Array Char := #[
+  '⚠' -- ⚠️, ⚠. Lake output uses '⚠' and does not include the text selector.
+]
+
 /-- If `false`, the character is not allowed in Mathlib.
 
 Implemented using an allowlist consisting of:
 - certain ASCII characters
+- certain emojis (`emojis`)
+- certain non-emoji variants of emojifiable characters (`nonEmojis`)
+- certain characters with no selector restrictions (`unrestricted`)
 - characters with abbreviations in the VSCode extension (`withVSCodeAbbrev`)
 - "the rest" (`othersInMathlib`)
 
@@ -202,6 +213,7 @@ public def isAllowedCharacter (c : Char) : Bool :=
   || othersInMathlib.contains c
   || emojis.contains c
   || nonEmojis.contains c
+  || unrestricted.contains c
   || c == UnicodeVariant.emoji
   || c == UnicodeVariant.text
 

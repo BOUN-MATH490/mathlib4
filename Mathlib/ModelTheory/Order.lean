@@ -10,6 +10,7 @@ public import Mathlib.Data.Rat.Encodable
 public import Mathlib.Data.Finset.Sort
 public import Mathlib.ModelTheory.Complexity
 public import Mathlib.ModelTheory.Fraisse
+public import Mathlib.ModelTheory.QuantifierElimination
 public import Mathlib.Order.CountableDenseLinearOrder
 
 /-!
@@ -49,7 +50,8 @@ This file defines ordered first-order languages and structures, as well as their
   theory of linear orders is Fraïssé.
 - `FirstOrder.Language.aleph0_categorical_dlo` shows that the theory of dense linear orders is
   `ℵ₀`-categorical, and thus complete.
-
+- `FirstOrder.Language.Theory.dlo_hasQuantifierElimination` shows that the theory of dense
+  linear orders without endpoints has quantifier elimination.
 -/
 
 @[expose] public section
@@ -135,7 +137,7 @@ language. -/
 @[simps] def orderLHom : Language.order →ᴸ L where
   onRelation | _, .le => leSymb
 
-@[simp]
+@[simp, nolint simpNF]
 theorem orderLHom_leSymb :
     (orderLHom L).onRelation leSymb = (leSymb : L.Relations 2) :=
   rfl
@@ -485,9 +487,10 @@ lemma dlo_isExtensionPair
   let g' :
     ((Substructure.closure Language.order).toFun {m} ⊔ S : Language.order.Substructure M) ↪o N :=
     ((OrderIso.setCongr _ _ (by
-      convert LowerAdjoint.closure_eq_self_of_mem_closed _
-        (Substructure.mem_closed_of_isRelational Language.order
-        ((insert m hS.toFinset : Finset M) : Set M))
+      convert!
+        LowerAdjoint.closure_eq_self_of_mem_closed _
+          (Substructure.mem_closed_of_isRelational Language.order
+            ((insert m hS.toFinset : Finset M) : Set M))
       simp only [Finset.coe_insert, Set.Finite.coe_toFinset, Substructure.closure_insert,
         Substructure.closure_eq])).toOrderEmbedding.trans g)
   use StrongHomClass.toEmbedding g'
@@ -547,6 +550,20 @@ theorem dlo_isComplete : Language.order.dlo.IsComplete :=
       letI : Language.order.Structure ℚ := orderStructure ℚ
       exact Theory.ModelType.of _ ℚ⟩
     fun _ => inferInstance
+
+namespace Theory
+
+/-- The theory of dense linear orders without endpoints has quantifier elimination. -/
+theorem dlo_hasQuantifierElimination :
+    Language.order.dlo.HasQuantifierElimination := by
+  apply hasQuantifierElimination_of_isElementaryExtensionPairFG
+  intro M N _ iN _ _ _ _ f a
+  obtain ⟨g, ha, hfg⟩ := Language.dlo_isExtensionPair M N f a
+  refine ⟨N, iN, ElementaryEmbedding.refl Language.order N, g, ha, ?_⟩
+  -- Mapping the codomain along the identity embedding is definitionally trivial.
+  exact hfg.imp fun _ h => h
+
+end Theory
 
 end Fraisse
 
