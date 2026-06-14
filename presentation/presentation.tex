@@ -11,7 +11,9 @@
 \IfFontExistsTF{Avenir Next}
   {\setsansfont{Avenir Next}}
   {\setsansfont{TeX Gyre Heros}}
-\setmonofont{DejaVu Sans Mono}
+\IfFontExistsTF{DejaVu Sans Mono}
+  {\setmonofont{DejaVu Sans Mono}}
+  {\setmonofont{Menlo}}
 
 \definecolor{accent}{HTML}{315C8C}
 \definecolor{textgray}{HTML}{222222}
@@ -492,7 +494,27 @@
 
 \partslide{Formalization in Lean}
 
-\begin{frame}[fragile]
+\begin{frame}{Lean4}
+  \begin{itemize}
+    \item Interactive theorem prover / functional programming language
+    \item Dependent type theory
+    \item Propositions as types, proofs as terms
+    \item UEP / K eliminator
+    \item Mathlib4
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Dense Linear Orders}
+\begin{Verbatim}[fontsize=\scriptsize,commandchars=\\\|\@]
+\lcom|/-- The theory of dense linear orders without endpoints. -/@
+\lkw|def@ \ldecl|dlo@ : L.Theory :=
+  L.linearOrderTheory ∪
+    {L.noTopOrderSentence, L.noBotOrderSentence,
+      L.denselyOrderedSentence}
+\end{Verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Quantifier Elimination}
 \begin{Verbatim}[fontsize=\scriptsize,commandchars=\\\|\@]
 \lcom|/-- A formula is equivalent to a quantifier-free formula over a theory. -/@
 \lkw|def@ \ldecl|IsQFEquivalent@ (T : L.Theory) {α : \ltype|Type*@} (φ : L.Formula α) : \ltype|Prop@ :=
@@ -505,13 +527,81 @@
 \end{Verbatim}
 \end{frame}
 
-\begin{frame}[fragile]
+\begin{frame}[fragile,t]{Marker 3.1.4}
+\vspace{0.7em}
+{\color{black}\rmfamily\fontsize{7.1}{8.2}\selectfont
+{\bfseries Theorem 3.1.4}\quad \itshape Suppose that \(\mathcal{L}\) contains a constant symbol \(c\), \(T\) is an
+\(\mathcal{L}\)-theory, and \(\phi(\bar{v})\) is an \(\mathcal{L}\)-formula.
+The following are equivalent:\\[0.2em]
+i) There is a quantifier-free \(\mathcal{L}\)-formula \(\psi(\bar{v})\) such that
+\(T \models \forall \bar{v}\,(\phi(\bar{v}) \leftrightarrow \psi(\bar{v}))\).\\[0.2em]
+ii) If \(\mathcal{M}\) and \(\mathcal{N}\) are models of \(T\), \(\mathcal{A}\) is an
+\(\mathcal{L}\)-structure, \(\mathcal{A} \subseteq \mathcal{M}\), and
+\(\mathcal{A} \subseteq \mathcal{N}\), then
+\(\mathcal{M} \models \phi(\bar{a})\) if and only if
+\(\mathcal{N} \models \phi(\bar{a})\) for all \(\bar{a} \in A\).
+}
+
+\vspace{0.35em}
+\begin{Verbatim}[fontsize=\tiny,commandchars=\\\|\@]
+\lcom|/-- A formula is equivalent over `T` to a quantifier-free formula iff its truth is invariant under@
+\lcom|pairs of embeddings from a common structure into nonempty models of `T`.@
+
+\lcom|This corresponds to [Theorem 3.1.4][marker2002]. -/@
+\lkw|theorem@ \ldecl|isQFEquivalent_iff_realize_iff_of_embeddings@
+    {T : L.Theory} {α : \ltype|Type@ u'} (φ : L.Formula α) :
+    T.IsQFEquivalent φ ↔
+      (∀ {M N A : \ltype|Type@ (max u v u')} [L.Structure M] [L.Structure N] [L.Structure A]
+        [T.Model M] [T.Model N] [Nonempty M] [Nonempty N]
+        (f : A ↪[L] M) (g : A ↪[L] N)
+        (a : α → A), φ.Realize (f ∘ a) ↔ φ.Realize (g ∘ a)) := \lhole|...@
+\end{Verbatim}
+\end{frame}
+
+\begin{frame}[fragile,t]{Henson 7.11}
+\vspace{0.7em}
+{\color{black}\rmfamily\fontsize{7.1}{8.2}\selectfont
+{\bfseries 7.11. Theorem.}\quad \itshape Let \(\Sigma\) be a set of \(L\)-sentences.
+The following conditions are equivalent:\\[0.2em]
+\((1)\) \(\Sigma\) has QE.\\[0.2em]
+\((2)\) Whenever \(\mathcal{M}, \mathcal{N}\) are models of \(\Sigma\),
+\(f\) is in \(\operatorname{Sub}(\mathcal{M}, \mathcal{N})\), and \(a \in M\),
+there exists an elementary extension \(\mathcal{N}'\) of \(\mathcal{N}\) and
+a function \(g\) in \(\operatorname{Sub}(\mathcal{M}, \mathcal{N}')\) such that
+\(g\) extends \(f\) and \(a \in \operatorname{dom}(g)\).\\[0.2em]
+\((3)\) Whenever \(\mathcal{M}, \mathcal{N}\) are \(\omega\)-saturated models of
+\(\Sigma\), either \(\operatorname{Sub}_0(\mathcal{M}, \mathcal{N})\) is empty
+or it is a back-and-forth system from \(\mathcal{M}\) to \(\mathcal{N}\).
+}
+
+\vspace{0.35em}
+\begin{Verbatim}[fontsize=\tiny,commandchars=\\\|\@]
+\lcom|/-- If every pair of nonempty models of `T` has the elementary extension-pair property, then `T`@
+\lcom|has quantifier elimination.@
+
+\lcom|The hypothesis is condition (2) in [Theorem 7.11][vandendries_henson_2016]; this theorem proves@
+\lcom|the implication from that extension property to condition (1). -/@
+\lkw|theorem@ \ldecl|hasQuantifierElimination_of_isElementaryExtensionPair@
+    {T : L.Theory}
+    (h : ∀ {M N : \ltype|Type@ (max u v)} [L.Structure M] [L.Structure N]
+      [T.Model M] [T.Model N] [Nonempty M] [Nonempty N],
+      L.IsElementaryExtensionPair M N) :
+    T.HasQuantifierElimination := \lhole|...@
+\end{Verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{DLO Has Quantifier Elimination}
 \begin{Verbatim}[fontsize=\scriptsize,commandchars=\\\|\@]
 \lcom|/-- The theory of dense linear orders without endpoints@
 \lcom|has quantifier elimination. -/@
 \lkw|theorem@ \ldecl|dlo_hasQuantifierElimination@ :
     Language.order.dlo.HasQuantifierElimination := \lkw|by@
-  \lhole|...@
+  apply hasQuantifierElimination_of_isElementaryExtensionPairFG
+  intro M N _ iN _ _ _ _ f a
+  obtain ⟨g, ha, hfg⟩ := Language.dlo_isExtensionPair M N f a
+  refine ⟨N, iN, ElementaryEmbedding.refl Language.order N, g, ha, ?_⟩
+  \lcom|-- Mapping the codomain along the identity embedding is definitionally trivial.@
+  exact hfg.imp fun _ h => h
 \end{Verbatim}
 \end{frame}
 

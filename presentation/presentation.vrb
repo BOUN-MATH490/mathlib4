@@ -1,7 +1,13 @@
+\frametitle{DLO Has Quantifier Elimination}
 \begin{Verbatim}[fontsize=\scriptsize,commandchars=\\\|\@]
 \lcom|/-- The theory of dense linear orders without endpoints@
 \lcom|has quantifier elimination. -/@
 \lkw|theorem@ \ldecl|dlo_hasQuantifierElimination@ :
     Language.order.dlo.HasQuantifierElimination := \lkw|by@
-  \lhole|...@
+  apply hasQuantifierElimination_of_isElementaryExtensionPairFG
+  intro M N _ iN _ _ _ _ f a
+  obtain ⟨g, ha, hfg⟩ := Language.dlo_isExtensionPair M N f a
+  refine ⟨N, iN, ElementaryEmbedding.refl Language.order N, g, ha, ?_⟩
+  \lcom|-- Mapping the codomain along the identity embedding is definitionally trivial.@
+  exact hfg.imp fun _ h => h
 \end{Verbatim}
