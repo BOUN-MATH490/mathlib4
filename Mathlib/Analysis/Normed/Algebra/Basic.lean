@@ -5,8 +5,7 @@ Authors: Frédéric Dupuis
 -/
 module
 
-public import Mathlib.Topology.Algebra.Module.Spaces.CharacterSpace
-public import Mathlib.Analysis.Normed.Module.WeakDual
+import Mathlib.Analysis.Normed.Module.WeakDual
 public import Mathlib.Analysis.Normed.Algebra.Spectrum
 
 /-!
@@ -28,7 +27,7 @@ normed algebra, character space, continuous functional calculus
 
 -/
 
-@[expose] public section
+public section
 
 namespace IntermediateField
 

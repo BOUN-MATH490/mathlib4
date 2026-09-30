@@ -7,7 +7,7 @@ module
 
 public import Mathlib.Algebra.DualNumber
 public import Mathlib.RingTheory.LocalRing.MaximalIdeal.Basic
-public import Mathlib.RingTheory.PrincipalIdealDomain
+import Mathlib.RingTheory.PrincipalIdealDomain
 
 /-!
 # Algebraic properties of dual numbers
@@ -20,7 +20,7 @@ public import Mathlib.RingTheory.PrincipalIdealDomain
 
 -/
 
-@[expose] public section
+public section
 
 namespace TrivSqZeroExt
 

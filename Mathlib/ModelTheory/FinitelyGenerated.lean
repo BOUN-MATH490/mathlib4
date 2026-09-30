@@ -5,8 +5,9 @@ Authors: Aaron Anderson
 -/
 module
 
-public import Mathlib.Data.Set.Finite.Lemmas
+import Mathlib.Data.Set.Finite.Lemmas
 public import Mathlib.ModelTheory.Substructures
+import Mathlib.Data.Set.Finite.Range
 
 /-!
 # Finitely Generated First-Order Structures
@@ -74,6 +75,20 @@ theorem fg_closure {s : Set M} (hs : s.Finite) : FG (closure L s) :=
 theorem fg_closure_singleton (x : M) : FG (closure L ({x} : Set M)) :=
   fg_closure (finite_singleton x)
 
+theorem FG.cardinalLTGenerated {N : L.Substructure M} (hN : N.FG) {κ : Cardinal}
+    (hκ : Cardinal.aleph0 ≤ κ) : N.CardinalLTGenerated κ := by
+  obtain ⟨S, hS, hSN⟩ := fg_def.1 hN
+  have : Finite S := hS.to_subtype
+  exact ⟨S, hasCardinalLT_of_finite S κ hκ, hSN⟩
+
+theorem cardinalLTGenerated_aleph0_iff {N : L.Substructure M} :
+    N.CardinalLTGenerated Cardinal.aleph0 ↔ N.FG := by
+  constructor
+  · rintro ⟨S, hS, hSN⟩
+    rw [hasCardinalLT_aleph0_iff] at hS
+    exact fg_def.2 ⟨S, hS, hSN⟩
+  · exact fun hN ↦ hN.cardinalLTGenerated le_rfl
+
 theorem FG.sup {N₁ N₂ : L.Substructure M} (hN₁ : N₁.FG) (hN₂ : N₂.FG) : (N₁ ⊔ N₂).FG :=
   let ⟨t₁, ht₁⟩ := fg_def.1 hN₁
   let ⟨t₂, ht₂⟩ := fg_def.1 hN₂
@@ -97,6 +112,7 @@ theorem FG.of_map_embedding {N : Type*} [L.Structure N] (f : M ↪[L] N) {s : L.
   rw [h] at h'
   exact Hom.map_le_range h'
 
+set_option backward.isDefEq.respectTransparency false in
 theorem FG.of_finite {s : L.Substructure M} [h : Finite s] : s.FG :=
   ⟨Set.Finite.toFinset h, by simp only [Finite.coe_toFinset, closure_eq]⟩
 
@@ -227,7 +243,7 @@ theorem FG.countable_hom (N : Type*) [L.Structure N] [Countable N] (h : FG L M) 
     intro f f' h
     apply Hom.eq_of_eqOn_dense closure_S
     intro x x_in_S
-    exact congr_fun h ⟨x, x_in_S⟩
+    congrm $h ⟨x, x_in_S⟩
   have : Finite ↑S := (S.finite_coe_iff).2 finite_S
   exact Function.Embedding.countable ⟨g, g_inj⟩
 
@@ -319,7 +335,7 @@ theorem Substructure.countable_fg_substructures_of_countable [Countable M] :
     intro S S' h
     apply Subtype.ext
     rw [(Exists.choose_spec S.prop).symm, (Exists.choose_spec S'.prop).symm]
-    exact congr_arg (closure L ∘ SetLike.coe) h
+    congrm closure L $h
   exact Function.Embedding.countable ⟨g, g_inj⟩
 
 instance Substructure.instCountable_fg_substructures_of_countable [Countable M] :
