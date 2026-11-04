@@ -5,7 +5,6 @@ Authors: Nicolò Cavalleri
 -/
 module
 
-public import Mathlib.Topology.Separation.Hausdorff
 public import Mathlib.Topology.Homeomorph.Lemmas
 
 /-!
@@ -45,6 +44,7 @@ theorem continuous_unop : Continuous (unop : Mᵐᵒᵖ → M) :=
 theorem continuous_op : Continuous (op : M → Mᵐᵒᵖ) :=
   continuous_induced_rng.2 continuous_id
 
+set_option backward.defeqAttrib.useBackward true in
 /-- `MulOpposite.op` as a homeomorphism. -/
 @[to_additive (attr := simps!) /-- `AddOpposite.op` as a homeomorphism. -/]
 def opHomeomorph : M ≃ₜ Mᵐᵒᵖ where
@@ -177,5 +177,19 @@ lemma isOpenMap_map {f : M →* N} (hf_inj : Function.Injective f) (hf : IsOpenM
   refine ⟨fun ⟨a, b, h, ha, hb⟩ ↦ ⟨⟨a, b, hf_inj ?_, hf_inj ?_⟩, ?_⟩,
     fun ⟨x, hxV, hx⟩ ↦ ⟨x, x.inv, by simp [hxV, ← hx]⟩⟩
   all_goals simp_all
+
+@[to_additive]
+lemma _root_.Topology.IsInducing.units_map {f : M →* N} (hf : IsInducing f) :
+    IsInducing (map f) := by
+  refine .of_comp (continuous_map hf.continuous) continuous_embedProduct ?_
+  exact hf.prodMap (opHomeomorph.isInducing.comp <| hf.comp opHomeomorph.symm.isInducing)
+    |>.comp isInducing_embedProduct
+
+@[to_additive]
+lemma _root_.Topology.IsEmbedding.units_map {f : M →* N} (hf : IsEmbedding f) :
+    IsEmbedding (map f) := by
+  refine .of_comp (continuous_map hf.continuous) continuous_embedProduct ?_
+  exact hf.prodMap (opHomeomorph.isEmbedding.comp <| hf.comp opHomeomorph.symm.isEmbedding)
+    |>.comp isEmbedding_embedProduct
 
 end Units
